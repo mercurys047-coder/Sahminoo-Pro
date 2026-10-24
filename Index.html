@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-mode="dark" data-accent="cyan">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>سهمینو پرو | مدیریت هوشمند دنگ و هزینه‌های گروهی</title>
+<style>
+:root {
+--font-main: Tahoma, sans-serif;
+--radius-xl: 18px;
+--radius-lg: 12px;
+--radius-md: 8px;
+--radius-sm: 6px;
+--success: #10B981;
+--success-soft: rgba(16, 185, 129, 0.16);
+--danger: #F43F5E;
+--danger-soft: rgba(244, 63, 94, 0.16);
+--warning: #F59E0B;
+--warning-soft: rgba(245, 158, 11, 0.16);
+}
+
+[data-mode="dark"] {
+--bg-base: #0B0F19;
+--bg-card: #161F33;
+--bg-card-hover: #1E2A44;
+--bg-input: #0F172A;
+--bg-modal: #131C31;
+--text-primary: #E2E8F0;
+--text-secondary: #94A3B8;
+--border-color: rgba(148, 163, 184, 0.18);
+--border-highlight: rgba(148, 163, 184, 0.32);
+}
+
+[data-mode="light"] {
+--bg-base: #DCE4EE;
+--bg-card: #E8EEF5;
+--bg-card-hover: #DFE8F2;
+--bg-input: #D5DFEC;
+--bg-modal: #E5ECF4;
+--text-primary: #0F172A;
+--text-secondary: #334155;
+--border-color: rgba(15, 23, 42, 0.14);
+--border-highlight: rgba(15, 23, 42, 0.28);
+}
+
+[data-accent="cyan"] { --accent: #06B6D4; --accent-2: #3B82F6; --accent-soft: rgba(6, 182, 212, 0.15); }
+[data-accent="violet"] { --accent: #8B5CF6; --accent-2: #EC4899; --accent-soft: rgba(139, 92, 246, 0.15); }
+[data-accent="emerald"] { --accent: #10B981; --accent-2: #06B6D4; --accent-soft: rgba(16, 185, 129, 0.15); }
+[data-accent="coral"] { --accent: #F97316; --accent-2: #F43F5E; --accent-soft: rgba(249, 115, 22, 0.15); }
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-main); }
+body { background-color: var(--bg-base); color: var(--text-primary); min-height: 100vh; padding-bottom: 50px; direction: rtl; }
+body.guest-mode .admin-only { display: none !important; }
+
+.access-banner {
+display: flex; align-items: center; justify-content: space-between;
+padding: 8px 12px; font-size: 0.78rem; font-weight: 600;
+border-bottom: 1px solid var(--border-color); background: var(--bg-card); gap: 8px; flex-wrap: wrap;
+}
+.access-badge {
+display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px;
+border-radius: 99px; font-size: 0.72rem; font-weight: 700;
+background: var(--warning-soft); color: var(--warning);
+}
+.admin-active .access-badge { background: var(--success-soft); color: var(--success); }
+
+.app-header { background: var(--bg-card); border-bottom: 1px solid var(--border-color); padding: 10px 14px; }
+.header-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 8px; }
+.brand-logo {
+width: 36px; height: 36px; border-radius: 10px;
+background: linear-gradient(135deg, var(--accent), var(--accent-2));
+display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.1rem; color: #0B0F19;
+}
+.brand-title h1 { font-size: 1rem; font-weight: 800; }
+.brand-title span { font-size: 0.7rem; color: var(--text-secondary); display: block; }
+
+.header-controls { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.accent-dots { display: flex; align-items: center; gap: 5px; background: var(--bg-input); padding: 4px 7px; border-radius: 99px; border: 1px solid var(--border-color); }
+.accent-dot { width: 14px; height: 14px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+.accent-dot.active { border-color: var(--text-primary); }
+
+.btn {
+display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+padding: 7px 11px; border-radius: var(--radius-md); font-size: 0.78rem; font-weight: 700;
+border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary);
+cursor: pointer; text-decoration: none; white-space: nowrap;
+}
+.btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #0B0F19; border: none; }
+.btn-success { background: var(--success-soft); color: var(--success); border-color: rgba(16, 185, 129, 0.4); }
+.btn-danger { background: var(--danger-soft); color: var(--danger); border-color: rgba(244, 63, 94, 0.35); }
+.btn-sm { padding: 5px 9px; font-size: 0.72rem; }
+
+.app-container {
+max-width: 1100px; margin: 12px auto; padding: 0 10px;
+display: grid; grid-template-columns: 240px 1fr; gap: 12px; align-items: start;
+}
+@media (max-width: 768px) { .app-container { grid-template-columns: 1fr; } }
+
+.glass-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 12px; }
+.group-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.group-item {
+display: flex; align-items: center; justify-content: space-between;
+padding: 8px 10px; border-radius: var(--radius-sm); background: var(--bg-input); border: 1px solid var(--border-color); cursor: pointer;
+}
+.group-item.active { background: var(--accent-soft); border-color: var(--accent); }
+
+.my-share-bar { margin-bottom: 12px; padding: 10px 12px; border-radius: var(--radius-md); background: var(--bg-card); border: 1px solid var(--border-highlight); }
+.member-chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-top: 6px; }
+.member-chip {
+padding: 4px 10px; border-radius: 99px; background: var(--bg-input); border: 1px solid var(--border-color);
+color: var(--text-primary); font-size: 0.76rem; font-weight: 600; cursor: pointer; white-space: nowrap;
+}
+.member-chip.active { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #0B0F19; font-weight: 800; }
+
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-bottom: 12px; }
+.stat-box { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 10px 12px; }
+.stat-label { font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 3px; }
+.stat-value { font-size: 0.98rem; font-weight: 800; word-break: break-all; }
+.stat-sub { font-size: 0.66rem; color: var(--accent); margin-top: 2px; }
+
+.tabs-bar { display: flex; gap: 4px; background: var(--bg-input); padding: 4px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 12px; overflow-x: auto; }
+.tab-btn { flex: 1; min-width: max-content; padding: 7px 10px; border-radius: var(--radius-sm); border: none; background: transparent; color: var(--text-secondary); font-weight: 700; font-size: 0.78rem; cursor: pointer; }
+.tab-btn.active { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #0B0F19; }
+
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+.item-list { display: flex; flex-direction: column; gap: 6px; }
+.item-row {
+background: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-md);
+padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+}
+
+.badge {
+display: inline-flex; align-items: center; padding: 2px 6px; border-radius: 99px;
+font-size: 0.68rem; font-weight: 700; background: var(--accent-soft); color: var(--accent);
+}
+.badge-success { background: var(--success-soft); color: var(--success); }
+.badge-danger { background: var(--danger-soft); color: var(--danger); }
+
+.bank-card-chip {
+display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 6px;
+background: var(--bg-card); border: 1px solid var(--border-color); font-family: monospace; font-size: 0.76rem; direction: ltr; cursor: pointer; margin-top: 4px; word-break: break-all;
+}
+
+.modal-backdrop { position: fixed; inset: 0; background: rgba(7, 10, 18, 0.8); z-index: 100; display: none; align-items: center; justify-content: center; padding: 10px; }
+.modal-backdrop.open { display: flex; }
+.modal-box { background: var(--bg-modal); border: 1px solid var(--border-highlight); border-radius: var(--radius-lg); width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; padding: 14px; }
+.form-group { margin-bottom: 10px; }
+.form-group label { display: block; font-size: 0.76rem; font-weight: 700; margin-bottom: 4px; color: var(--text-secondary); }
+.form-control {
+width: 100%; padding: 8px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);
+background: var(--bg-input); color: var(--text-primary); font-size: 0.84rem; outline: none;
+}
+
+.toast-box {
+position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+background: var(--bg-modal); color: var(--text-primary); border: 1px solid var(--accent);
+padding: 8px 16px; border-radius: 99px; font-size: 0.78rem; font-weight: 700; display: none; z-index: 200;
+}
+.toast-box.show { display: block; }
+</style>
+</head>
+<body class="guest-mode">
+
+<div id="accessBanner" class="access-banner guest-active">
+<div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+<span id="accessBadge" class="access-badge">👁️ حالت مهمان</span>
+<span id="accessText">رمز مدیر: 1234</span>
+</div>
+<button id="toggleLockBtn" class="btn btn-sm btn-primary" onclick="handleAccessToggle()">🔑 ورود مدیر</button>
+</div>
+
+<header class="app-header">
+<div class="header-inner">
+<div class="brand">
+<div class="brand-logo">س</div>
+<div class="brand-title">
+<h1>سهمینو پرو</h1>
+<span id="activeGroupSubtitle">مدیریت هوشمند دنگ</span>
+</div>
+</div>
+<div class="header-controls">
+<div class="accent-dots">
+<div class="accent-dot active" style="background:#06B6D4;" onclick="setAccent('cyan', this)"></div>
+<div class="accent-dot" style="background:#8B5CF6;" onclick="setAccent('violet', this)"></div>
+<div class="accent-dot" style="background:#10B981;" onclick="setAccent('emerald', this)"></div>
+<div class="accent-dot" style="background:#F97316;" onclick="setAccent('coral', this)"></div>
+</div>
+<button class="btn btn-sm" onclick="toggleThemeMode()" id="modeBtn">☀️ روشن</button>
+<button class="btn btn-sm btn-primary admin-only" onclick="openExpenseModal()">+ خرج جدید</button>
+</div>
+</div>
+</header>
+
+<main class="app-container">
+<aside class="glass-card">
+<div style="display:flex; align-items:center; justify-content:space-between;">
+<h3 style="font-size:0.88rem;">📂 گروه‌ها</h3>
+<button class="btn btn-sm btn-primary admin-only" onclick="openGroupModal()">+ جدید</button>
+</div>
+<div id="groupList" class="group-list"></div>
+</aside>
+
+<section>
+<div class="my-share-bar">
+<div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:4px;">
+<span style="font-size:0.8rem; font-weight:800;">👤 سهم من (روی نام خود بزنید):</span>
+<span id="personalStatusSummary" style="font-size:0.76rem; color:var(--accent); font-weight:700;">همه اعضا</span>
+</div>
+<div id="memberFilterChips" class="member-chips"></div>
+<div id="personalDetailBox" style="display:none; margin-top:8px; padding-top:8px; border-top:1px solid var(--border-color); font-size:0.78rem;"></div>
+</div>
+
+<div class="stats-grid">
+<div class="stat-box">
+<div class="stat-label">کل مخارج گروه</div>
+<div class="stat-value" id="statTotal">۰ تومان</div>
+<div class="stat-sub" id="statCount">۰ فاکتور</div>
+</div>
+<div class="stat-box">
+<div class="stat-label">میانگین سهم هر نفر</div>
+<div class="stat-value" id="statAvg">۰ تومان</div>
+<div class="stat-sub" id="statMembers">۰ عضو</div>
+</div>
+<div class="stat-box">
+<div class="stat-label">بیشترین پرداخت</div>
+<div class="stat-value" id="statTopPayer">-</div>
+<div class="stat-sub" id="statTopPayerAmount">۰ تومان</div>
+</div>
+</div>
+
+<div class="tabs-bar">
+<button class="tab-btn active" onclick="switchTab('expenses', this)">🧾 مخارج</button>
+<button class="tab-btn" onclick="switchTab('settle', this)">⚖️ تسویه</button>
+<button class="tab-btn" onclick="switchTab('members', this)">👥 اعضا</button>
+<button class="tab-btn admin-only" onclick="switchTab('share', this)">🔑 رمز مدیر</button>
+</div>
+
+<div id="tab-expenses" class="tab-pane active glass-card">
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+<h3 style="font-size:0.88rem;">لیست فاکتورها</h3>
+<button class="btn btn-sm btn-primary admin-only" onclick="openExpenseModal()">+ ثبت هزینه</button>
+</div>
+<div id="expenseList" class="item-list"></div>
+</div>
+
+<div id="tab-settle" class="tab-pane glass-card">
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:6px;">
+<div>
+<h3 style="font-size:0.88rem;">تسویه حساب هوشمند</h3>
+<p style="font-size:0.7rem; color:var(--text-secondary);">کلیک روی شماره کارت برای کپی</p>
+</div>
+<button class="btn btn-sm" onclick="copyTextReport()">📋 کپی گزارش</button>
+</div>
+<div id="settlementList" class="item-list"></div>
+
+<h4 style="font-size:0.84rem; margin:14px 0 6px;">📊 تراز مالی اعضا</h4>
+<div id="balanceList" class="item-list"></div>
+</div>
+
+<div id="tab-members" class="tab-pane glass-card">
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+<h3 style="font-size:0.88rem;">اعضا و کارت‌ها</h3>
+<button class="btn btn-sm btn-primary admin-only" onclick="openMemberModal()">+ عضو</button>
+</div>
+<div id="memberList" class="item-list"></div>
+</div>
+
+<div id="tab-share" class="tab-pane glass-card">
+<h3 style="font-size:0.88rem; margin-bottom:8px;">🔑 تغییر رمز مدیر (فعلی: <span id="currentPinHint">1234</span>)</h3>
+<div style="display:flex; gap:6px; align-items:center; max-width:280px;">
+<input type="text" id="newAdminPinInput" class="form-control" placeholder="رمز جدید..." />
+<button class="btn btn-primary btn-sm" onclick="updateAdminPin()">ذخیره</button>
+</div>
+</div>
+</section>
+</main>
+
+<div id="expenseModal" class="modal-backdrop">
+<div class="modal-box">
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+<h3 style="font-size:0.92rem;">🧾 ثبت هزینه جدید</h3>
+<button class="btn btn-sm" onclick="closeModal('expenseModal')">✕</button>
+</div>
+<div class="form-group">
+<label>عنوان هزینه</label>
+<input type="text" id="expTitle" class="form-control" placeholder="مثلاً: شام رستوران..." />
+</div>
+<div class="form-group">
+<label>مبلغ کل به تومان (امکان جمع مثلاً 450000+120000)</label>
+<input type="text" id="expAmount" class="form-control" placeholder="مثلاً 650000" oninput="handleAmountInput(this.value)" />
+<div id="expAmountWords" style="font-size:0.7rem; color:var(--accent); margin-top:3px;"></div>
+</div>
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+<div class="form-group">
+<label>پرداخت‌کننده</label>
+<select id="expPayer" class="form-control"></select>
+</div>
+<div class="form-group">
+<label>دسته‌بندی</label>
+<select id="expCategory" class="form-control">
+<option value="🍔 غذا">🍔 غذا</option>
+<option value="🏠 اقامت">🏠 اقامت</option>
+<option value="🚗 حمل‌ونقل">🚗 حمل‌ونقل</option>
+<option value="🛒 سوپرمارکت">🛒 سوپرمارکت</option>
+<option value="📦 سایر">📦 سایر</option>
+</select>
+</div>
+</div>
+<div class="form-group">
+<label>روش تقسیم</label>
+<select id="expSplitType" class="form-control" onchange="renderSplitMembersUI()">
+<option value="equal">مساوی بین افراد</option>
+<option value="weight">بر اساس ضریب خانوار</option>
+<option value="exact">مبلغ دقیق دستی</option>
+</select>
+</div>
+<div class="form-group">
+<label>اعضای شریک:</label>
+<div id="expSplitMembersBox" style="display:flex; flex-direction:column; gap:5px; max-height:140px; overflow-y:auto;"></div>
+</div>
+<button class="btn btn-primary" style="width:100%; margin-top:6px;" onclick="saveExpense()">✅ ثبت هزینه</button>
+</div>
+</div>
+
+<div id="memberModal" class="modal-backdrop">
+<div class="modal-box">
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+<h3 style="font-size:0.92rem;">👤 افزودن عضو</h3>
+<button class="btn btn-sm" onclick="closeModal('memberModal')">✕</button>
+</div>
+<div class="form-group">
+<label>نام عضو</label>
+<input type="text" id="memName" class="form-control" placeholder="مثلاً: علی..." />
+</div>
+<div class="form-group">
+<label>شماره کارت بانکی (۱۶ رقم)</label>
+<input type="text" id="memCard" class="form-control" maxlength="19" placeholder="6037-9975-..." dir="ltr" />
+</div>
+<div class="form-group">
+<label>ضریب سهم</label>
+<input type="number" id="memWeight" class="form-control" value="1" min="1" max="20" />
+</div>
+<button class="btn btn-primary" style="width:100%;" onclick="saveMember()">✅ ذخیره</button>
+</div>
+</div>
+
+<div id="groupModal" class="modal-backdrop">
+<div class="modal-box">
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+<h3 style="font-size:0.92rem;">📂 ساخت گروه جدید</h3>
+<button class="btn btn-sm" onclick="closeModal('groupModal')">✕</button>
+</div>
+<div class="form-group">
+<label>نام گروه یا سفر</label>
+<input type="text" id="grpTitle" class="form-control" placeholder="مثلاً: سفر شمال..." />
+</div>
+<button class="btn btn-primary" style="width:100%;" onclick="saveGroup()">✅ ایجاد</button>
+</div>
+</div>
+
+<div id="pinModal" class="modal-backdrop">
+<div class="modal-box" style="max-width:320px; text-align:center;">
+<h3 style="font-size:0.92rem; margin-bottom:6px;">🔒 ورود مدیر</h3>
+<p style="font-size:0.74rem; color:var(--text-secondary); margin-bottom:10px;">رمز پیش‌فرض: 1234</p>
+<input type="password" id="pinUnlockInput" class="form-control" placeholder="رمز عبور..." style="text-align:center; margin-bottom:10px;" onkeydown="if(event.key==='Enter') verifyAdminPin()" />
+<div style="display:flex; gap:6px;">
+<button class="btn btn-primary btn-sm" style="flex:1;" onclick="verifyAdminPin()">ورود</button>
+<button class="btn btn-sm" onclick="closeModal('pinModal')">انصراف</button>
+</div>
+</div>
+</div>
+
+<div id="toast" class="toast-box"></div>
+
+<script>
+const BANK_BINS = {
+"603799": "ملی", "610433": "ملت", "621986": "سامان/بلو",
+"502229": "پاسارگاد", "627412": "اقتصادنوین", "622106": "پارسیان",
+"589463": "رفاه", "589210": "سپه", "603769": "صادرات",
+"585983": "تجارت", "603770": "کشاورزی", "628023": "مسکن"
+};
+
+const defaultState = {
+adminPin: "1234",
+activeGroupId: "g1",
+selectedMemberFilter: "ALL",
+groups: [
+{
+id: "g1",
+title: "🌲 سفر شمال",
+members: [
+{ id: "m1", name: "امیرحسین", card: "6219861045128890", weight: 1 },
+{ id: "m2", name: "سارا", card: "6104337811223344", weight: 1 },
+{ id: "m3", name: "محمدرضا", card: "5022291099887766", weight: 1 }
+ ],
+expenses: [
+{
+id: "e1",
+title: "اجاره ویلا",
+amount: 3000000,
+payerId: "m1",
+category: "🏠 اقامت",
+date: "۱۴۰۵/۰۲/۱۴",
+splits: { m1: 1000000, m2: 1000000, m3: 1000000 }
+}
+ ]
+}
+]
+};
+
+let state = JSON.parse(JSON.stringify(defaultState));
+let isGuestMode = true;
+
+function safeGetStorage(key) {
+try { return window.localStorage ? window.localStorage.getItem(key) : null; } catch (e) { return null; }
+}
+function safeSetStorage(key, val) {
+try { if (window.localStorage) window.localStorage.setItem(key, val); } catch (e) {}
+}
+
+function initApp() {
+const saved = safeGetStorage("sahmino_mobile_fix");
+if (saved) {
+try { state = JSON.parse(saved); } catch (e) {}
+}
+renderAll();
+}
+
+function saveState() {
+safeSetStorage("sahmino_mobile_fix", JSON.stringify(state));
+renderAll();
+}
+
+function safeCopyText(text, successMsg) {
+if (!text) return showToast("موردی برای کپی نیست");
+if (navigator.clipboard && navigator.clipboard.writeText) {
+navigator.clipboard.writeText(text)
+.then(() => showToast(successMsg || "📋 کپی شد!"))
+.catch(() => fallbackCopy(text));
+} else { fallbackCopy(text); }
+}
+
+function fallbackCopy(text) {
+const ta = document.createElement("textarea");
+ta.value = text;
+document.body.appendChild(ta);
+ta.select();
+try { document.execCommand('copy'); showToast("📋 کپی شد!"); } catch (e) {}
+document.body.removeChild(ta);
+}
+
+function getActiveGroup() {
+return state.groups.find(g => g.id === state.activeGroupId) || state.groups[0];
+}
+
+function toPersianNum(num) {
+if (num === null || num === undefined) return "۰";
+return Math.round(num).toLocaleString("fa-IR");
+}
+
+function detectBank(card) {
+if (!card) return "ثبت نشده";
+const clean = card.replace(/\D/g, "");
+if (clean.length < 6) return "کارت ناقص";
+return BANK_BINS[clean.substring(0, 6)] || "شتاب";
+}
+
+function formatCardNumber(card) {
+if (!card) return "بدون شماره کارت";
+return card.replace(/\D/g, "").replace(/(\d{4})(?=\d)/g, "$`1-");
+}
+
+function enableGuestMode(lock) {
+isGuestMode = lock;
+const banner = document.getElementById("accessBanner");
+const badge = document.getElementById("accessBadge");
+const text = document.getElementById("accessText");
+const btn = document.getElementById("toggleLockBtn");
+
+if (isGuestMode) {
+document.body.classList.add("guest-mode");
+banner.className = "access-banner guest-active";
+badge.innerHTML = "👁️ حالت مهمان";
+text.innerHTML = "رمز مدیر: 1234";
+btn.innerHTML = "🔑 ورود مدیر";
+} else {
+document.body.classList.remove("guest-mode");
+banner.className = "access-banner admin-active";
+badge.innerHTML = "👑 حالت مدیر";
+text.innerHTML = "ویرایش فعال است";
+btn.innerHTML = "🔒 قفل پنل";
+}
+renderAll();
+}
+
+function handleAccessToggle() {
+if (!isGuestMode) {
+enableGuestMode(true);
+showToast("🔒 پنل قفل شد");
+} else {
+document.getElementById("pinUnlockInput").value = "";
+openModal("pinModal");
+}
+}
+
+function verifyAdminPin() {
+const val = document.getElementById("pinUnlockInput").value.trim();
+if (val === (state.adminPin || "1234")) {
+closeModal("pinModal");
+enableGuestMode(false);
+showToast("✅ مدیر وارد شد");
+} else {
+showToast("❌ رمز اشتباه است!");
+}
+}
+
+function updateAdminPin() {
+const newPin = document.getElementById("newAdminPinInput").value.trim();
+if (!newPin || newPin.length < 3) return showToast("حداقل ۳ کاراکتر");
+state.adminPin = newPin;
+document.getElementById("newAdminPinInput").value = "";
+saveState();
+showToast("🔑 رمز تغییر کرد!");
+}
+
+function calculateBalances(group) {
+const balances = {}, paidMap = {}, shareMap = {};
+group.members.forEach(m => { balances[m.id] = 0; paidMap[m.id] = 0; shareMap[m.id] = 0; });
+
+group.expenses.forEach(exp => {
+if (paidMap[exp.payerId] !== undefined) {
+paidMap[exp.payerId] += exp.amount;
+balances[exp.payerId] += exp.amount;
+}
+Object.entries(exp.splits || {}).forEach(([mId, share]) => {
+if (shareMap[mId] !== undefined) {
+shareMap[mId] += share;
+balances[mId] -= share;
+}
+});
+});
+
+const debtors = [], creditors = [];
+Object.entries(balances).forEach(([id, bal]) => {
+if (bal < -10) debtors.push({ id, amount: -bal });
+else if (bal > 10) creditors.push({ id, amount: bal });
+});
+
+debtors.sort((a, b) => b.amount - a.amount);
+creditors.sort((a, b) => b.amount - a.amount);
+
+const transactions = [];
+let i = 0, j = 0;
+while (i < debtors.length && j < creditors.length) {
+const pay = Math.min(debtors[i].amount, creditors[j].amount);
+if (pay > 10) transactions.push({ fromId: debtors[i].id, toId: creditors[j].id, amount: Math.round(pay) });
+debtors[i].amount -= pay;
+creditors[j].amount -= pay;
+if (debtors[i].amount < 10) i++;
+if (creditors[j].amount < 10) j++;
+}
+return { balances, paidMap, shareMap, transactions };
+}
+
+function renderAll() {
+const group = getActiveGroup();
+document.getElementById("activeGroupSubtitle").textContent = group.title;
+document.getElementById("currentPinHint").textContent = state.adminPin || "1234";
+
+document.getElementById("groupList").innerHTML = state.groups.map(g => &lt;div class="group-item${g.id === group.id ? 'active' : ''}" onclick="selectGroup('{g.title}</div>
+<div style="font-size:0.68rem; color:var(--text-secondary);">{toPersianNum(g.expenses.length)} فاکتور</div>
+</div>
+latex
+{state.groups.length &gt; 1 ? `<button class="btn btn-sm btn-danger admin-only" onclick="event.stopPropagation(); deleteGroup('
+
+{g.id}')">حذف</button>: ''} &lt;/div&gt;).join("");
+
+const { balances, paidMap, shareMap, transactions } = calculateBalances(group);
+const totalExp = group.expenses.reduce((s, e) => s + e.amount, 0);
+const avgExp = group.members.length ? totalExp / group.members.length : 0;
+
+let topPayerName = "-", topPayerVal = 0;
+group.members.forEach(m => {
+if ((paidMap[m.id] || 0) > topPayerVal) { topPayerVal = paidMap[m.id]; topPayerName = m.name; }
+});
+
+document.getElementById("statTotal").textContent = ${toPersianNum(totalExp)} تومان; document.getElementById("statCount").textContent = ``${toPersianNum(group.expenses.length)} فاکتور;
+document.getElementById("statAvg").textContent = ${toPersianNum(avgExp)} تومان; document.getElementById("statMembers").textContent = ``${toPersianNum(group.members.length)} عضو;
+document.getElementById("statTopPayer").textContent = topPayerName;
+document.getElementById("statTopPayerAmount").textContent = ${toPersianNum(topPayerVal)} تومان`;
+
+document.getElementById("memberFilterChips").innerHTML = &lt;button class="member-chip${state.selectedMemberFilter === 'ALL' ? 'active' : ''}" onclick="setMemberFilter('ALL')">👥 همه</button>
+latex
+{group.members.map(m =&gt; ` &lt;button class="member-chip 
+
+{state.selectedMemberFilter === m.id ? 'active' : ''}" onclick="setMemberFilter('{m.name}</button>
+).join("")};
+
+const detailBox = document.getElementById("personalDetailBox");
+if (state.selectedMemberFilter === "ALL") {
+detailBox.style.display = "none";
+document.getElementById("personalStatusSummary").textContent = "همه اعضا";
+} else {
+const mem = group.members.find(x => x.id === state.selectedMemberFilter);
+if (mem) {
+detailBox.style.display = "block";
+const bal = balances[mem.id] || 0;
+const myTx = transactions.filter(t => t.fromId === mem.id || t.toId === mem.id);
+document.getElementById("personalStatusSummary").textContent =
+bal > 10 ? طلبکار: +${toPersianNum(bal)}: bal &lt; -10 ?بدهکار: ${toPersianNum(Math.abs(bal))} : "تسویه ✅";
+
+detailBox.innerHTML = &lt;div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:6px;"&gt; &lt;span&gt;پرداخت: &lt;b&gt;${toPersianNum(paidMap[mem.id])}</b></span>
+<span>سهم: <b>${toPersianNum(shareMap[mem.id])}&lt;/b&gt;&lt;/span&gt; &lt;/div&gt; ${myTx.length ? myTx.map(t => {
+const fromM = group.members.find(x => x.id === t.fromId);
+const toM = group.members.find(x => x.id === t.toId);
+return <div style="margin-top:4px; padding:6px 10px; border-radius:6px; background:var(--bg-input);"&gt; 👉 &lt;b&gt;${fromM.name}</b> باید <b>{toM.name}</b> بزند
+(<span style="font-family:monospace; color:var(--accent);" onclick="safeCopyText('{formatCardNumber(toM.card)} 📋</span>)
+</div>; }).join("") :<div style="color:var(--success); font-weight:700;">✅ تسویه است!</div>};
+}
+}
+
+const expBox = document.getElementById("expenseList");
+const filteredExpenses = state.selectedMemberFilter === "ALL"
+? group.expenses
+: group.expenses.filter(e => e.payerId === state.selectedMemberFilter || (e.splits && e.splits[state.selectedMemberFilter] > 0));
+
+expBox.innerHTML = !filteredExpenses.length
+? <div style="text-align:center; padding:16px; color:var(--text-secondary); font-size:0.8rem;"&gt;هنوز هزینه‌ای ثبت نشده است.&lt;/div>
+: filteredExpenses.slice().reverse().map(e => {
+const payer = group.members.find(m => m.id === e.payerId);
+return &lt;div class="item-row"&gt; &lt;div&gt; &lt;div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;"&gt; &lt;span class="badge"&gt;${e.category || 'هزینه'}</span>
+<strong style="font-size:0.86rem;">${e.title}&lt;/strong&gt; &lt;span style="font-size:0.68rem; color:var(--text-secondary);"&gt;${e.date || ''}</span>
+</div>
+<div style="font-size:0.72rem; color:var(--text-secondary); margin-top:3px;">
+پرداخت: <b style="color:var(--text-primary);">${payer ? payer.name : '-'}&lt;/b&gt; &lt;/div&gt; &lt;/div&gt; &lt;div style="display:flex; align-items:center; gap:6px;"&gt; &lt;strong style="font-size:0.88rem; color:var(--accent);"&gt;${toPersianNum(e.amount)} ت</strong>
+<button class="btn btn-sm btn-danger admin-only" onclick="deleteExpense('${e.id}')"&gt;حذف&lt;/button&gt; &lt;/div&gt; &lt;/div&gt;;
+}).join("");
+
+const setBox = document.getElementById("settlementList");
+setBox.innerHTML = !transactions.length
+? <div style="text-align:center; padding:16px; color:var(--success); font-weight:700; font-size:0.8rem;"&gt;🎉 همه حساب‌ها تسویه است!&lt;/div>
+: transactions.map(t => {
+const fromM = group.members.find(m => m.id === t.fromId) || { name: "ناشناس" };
+const toM = group.members.find(m => m.id === t.toId) || { name: "ناشناس", card: "" };
+return &lt;div class="item-row"&gt; &lt;div&gt; &lt;div style="font-size:0.84rem;"&gt; &lt;b style="color:var(--danger);"&gt;${fromM.name}</b> ⬅️ به ⬅️ <b style="color:var(--success);">${toM.name}&lt;/b&gt; &lt;/div&gt; &lt;div class="bank-card-chip" onclick="safeCopyText('${toM.card}', '💳 کارت کپی شد!')">
+<span>🏦 ${detectBank(toM.card)}: ${formatCardNumber(toM.card)}</span>
+<span style="color:var(--accent);">📋 کپی</span>
+</div>
+</div>
+<div style="display:flex; align-items:center; gap:6px;">
+<span class="badge badge-success" style="font-size:0.8rem; padding:4px 8px;">${toPersianNum(t.amount)} ت&lt;/span&gt; &lt;button class="btn btn-sm btn-success admin-only" onclick="recordSettlement('${t.fromId}', '${t.toId}', ${t.amount})">✅ تسویه</button>
+</div>
+</div>
+`;
+}).join("");
+
+document.getElementById("balanceList").innerHTML = group.members.map(m => {
+const b = Math.round(balances[m.id] || 0);
+const statusBadge = b > 10
+? <span class="badge badge-success"&gt;+${toPersianNum(b)} ت طلبکار</span>: b &lt; -10 ?<span class="badge badge-danger">{m.name}</strong>
+${statusBadge} &lt;/div&gt;;
+}).join("");
+
+document.getElementById("memberList").innerHTML = group.members.map(m => &lt;div class="item-row"&gt; &lt;div&gt; &lt;div style="font-weight:700; font-size:0.84rem;"&gt;👤${m.name} <span class="badge">ضریب: {m.card}', '💳 کارت کپی شد!')">
+<span>🏦 {formatCardNumber(m.card)}</span>
+<span style="color:var(--accent);">📋 کپی</span>
+</div>
+</div>
+<button class="btn btn-sm btn-danger admin-only" onclick="deleteMember('${m.id}')"&gt;حذف&lt;/button&gt; &lt;/div&gt;).join("");
+}
+
+function setMemberFilter(mId) { state.selectedMemberFilter = mId; renderAll(); }
+function selectGroup(gId) { state.activeGroupId = gId; state.selectedMemberFilter = "ALL"; saveState(); }
+function openModal(id) { document.getElementById(id).classList.add("open"); }
+function closeModal(id) { document.getElementById(id).classList.remove("open"); }
+
+function openGroupModal() { document.getElementById("grpTitle").value = ""; openModal("groupModal"); }
+function saveGroup() {
+const title = document.getElementById("grpTitle").value.trim();
+if (!title) return showToast("نام گروه را وارد کنید");
+const newG = { id: "g_" + Date.now(), title, members: [{ id: "m_" + Date.now(), name: "من (مدیر)", card: "", weight: 1 }], expenses: [] };
+state.groups.push(newG);
+state.activeGroupId = newG.id;
+closeModal("groupModal");
+saveState();
+}
+function deleteGroup(gId) {
+if (state.groups.length <= 1) return;
+state.groups = state.groups.filter(g => g.id !== gId);
+state.activeGroupId = state.groups[0].id;
+saveState();
+}
+
+function openMemberModal() {
+document.getElementById("memName").value = "";
+document.getElementById("memCard").value = "";
+document.getElementById("memWeight").value = "1";
+openModal("memberModal");
+}
+function saveMember() {
+const name = document.getElementById("memName").value.trim();
+const card = document.getElementById("memCard").value.replace(/\D/g, "");
+const weight = parseFloat(document.getElementById("memWeight").value) || 1;
+if (!name) return showToast("نام عضو را وارد کنید");
+getActiveGroup().members.push({ id: "m_" + Date.now(), name, card, weight });
+closeModal("memberModal");
+saveState();
+}
+function deleteMember(mId) {
+const group = getActiveGroup();
+if (group.members.length <= 1) return showToast("حداقل یک عضو لازم است");
+group.members = group.members.filter(m => m.id !== mId);
+saveState();
+}
+
+function evaluateMathAmount(raw) {
+const clean = String(raw).replace(/[^0-9+-*/.]/g, "");
+if (!clean) return 0;
+try {
+const res = Function('"use strict";return (' + clean + ')')();
+return isFinite(res) && res > 0 ? Math.round(res) : 0;
+} catch (e) { return parseInt(clean, 10) || 0; }
+}
+function handleAmountInput(val) {
+const num = evaluateMathAmount(val);
+document.getElementById("expAmountWords").textContent = num > 0 ? معادل:${toPersianNum(num)} تومان: ""; renderSplitMembersUI(); } function openExpenseModal() { const group = getActiveGroup(); document.getElementById("expTitle").value = ""; document.getElementById("expAmount").value = ""; document.getElementById("expAmountWords").textContent = ""; document.getElementById("expPayer").innerHTML = group.members.map(m =&gt;<option value="{m.name}</option>).join(""); renderSplitMembersUI(); openModal("expenseModal"); } function renderSplitMembersUI() { const group = getActiveGroup(); const mode = document.getElementById("expSplitType").value; const box = document.getElementById("expSplitMembersBox"); const total = evaluateMathAmount(document.getElementById("expAmount").value); box.innerHTML = group.members.map(m =&gt; { if (mode === "equal") { return<label style="display:flex; align-items:center; justify-content:space-between; padding:5px 8px; background:var(--bg-card); border-radius:6px; font-size:0.78rem;">
+<span><input type="checkbox" class="split-check" data-id="{m.name}</span>
+<span style="color:var(--text-secondary);">مساوی</span>
+</label>; } else if (mode === "weight") { return<div style="display:flex; align-items:center; justify-content:space-between; padding:5px 8px; background:var(--bg-card); border-radius:6px; font-size:0.78rem;">
+<span>{m.id}" value="latex
+{m.weight || 1}" min="0" style="width:70px; padding:3px 6px;" /&gt; &lt;/div>`; } else { const defShare = group.members.length ? Math.round(total / group.members.length) : 0; return `<div style="display:flex; align-items:center; justify-content:space-between; padding:5px 8px; background:var(--bg-card); border-radius:6px; font-size:0.78rem;"&gt; &lt;span&gt;
+
+{m.name}</span>
+<input type="number" class="form-control split-exact" data-id="{defShare}" min="0" style="width:100px; padding:3px 6px;" />
+</div>`;
+}
+}).join("");
+}
+
+function saveExpense() {
+const title = document.getElementById("expTitle").value.trim();
+const amount = evaluateMathAmount(document.getElementById("expAmount").value);
+const payerId = document.getElementById("expPayer").value;
+const category = document.getElementById("expCategory").value;
+const mode = document.getElementById("expSplitType").value;
+if (!title || amount <= 0) return showToast("عنوان و مبلغ معتبر وارد کنید");
+
+const splits = {};
+if (mode === "equal") {
+const checked = Array.from(document.querySelectorAll(".split-check:checked")).map(el => el.dataset.id);
+if (!checked.length) return showToast("حداقل یک نفر انتخاب شود");
+const share = Math.round(amount / checked.length);
+checked.forEach(id => splits[id] = share);
+} else if (mode === "weight") {
+const inputs = Array.from(document.querySelectorAll(".split-weight"));
+const totalW = inputs.reduce((s, el) => s + (parseFloat(el.value) || 0), 0);
+if (totalW <= 0) return showToast("مجموع ضرایب باید بیشتر از صفر باشد");
+inputs.forEach(el => {
+const w = parseFloat(el.value) || 0;
+if (w > 0) splits[el.dataset.id] = Math.round((amount * w) / totalW);
+});
+} else {
+Array.from(document.querySelectorAll(".split-exact")).forEach(el => {
+const v = parseFloat(el.value) || 0;
+if (v > 0) splits[el.dataset.id] = Math.round(v);
+});
+}
+
+getActiveGroup().expenses.push({
+id: "e_" + Date.now(), title, amount, payerId, category,
+date: new Date().toLocaleDateString("fa-IR"), splits
+});
+closeModal("expenseModal");
+saveState();
+}
+
+function deleteExpense(eId) {
+const group = getActiveGroup();
+group.expenses = group.expenses.filter(e => e.id !== eId);
+saveState();
+}
+
+function recordSettlement(fromId, toId, amount) {
+const group = getActiveGroup();
+const fromM = group.members.find(m => m.id === fromId);
+const toM = group.members.find(m => m.id === toId);
+if (!fromM || !toM) return;
+group.expenses.push({
+id: "e_" + Date.now(),
+title: تسویه (${fromM.name} به ${toM.name}),
+amount, payerId: fromId, category: "⚖️ تسویه",
+date: new Date().toLocaleDateString("fa-IR"),
+splits: { [toId]: amount }
+});
+saveState();
+}
+
+function copyTextReport() {
+const group = getActiveGroup();
+const { transactions } = calculateBalances(group);
+const total = group.expenses.reduce((s, e) => s + e.amount, 0);
+let txt = 📊 گزارش سهمینو (${group.title})\nمجموع: ${toPersianNum(total)} ت\n\nتسویه:\n;
+if (!transactions.length) txt += ✅ همه تسویه هستند!\n;
+else transactions.forEach(t => {
+const fromM = group.members.find(m => m.id === t.fromId);
+const toM = group.members.find(m => m.id === t.toId);
+txt += 🔸 ${fromM.name} ⬅️ ${toPersianNum(t.amount)} ت به ${toM.name}\n💳 کارت: ${formatCardNumber(toM.card)}\n\n;
+});
+safeCopyText(txt, "📋 گزارش کپی شد!");
+}
+
+function switchTab(tabId, btn) {
+document.querySelectorAll(".tab-pane").forEach(el => el.classList.remove("active"));
+document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
+document.getElementById("tab-" + tabId).classList.add("active");
+btn.classList.add("active");
+}
+
+function toggleThemeMode() {
+const html = document.documentElement;
+const next = html.getAttribute("data-mode") === "dark" ? "light" : "dark";
+html.setAttribute("data-mode", next);
+document.getElementById("modeBtn").textContent = next === "dark" ? "☀️ روشن" : "🌙 تاریک";
+}
+
+function setAccent(accent, dotEl) {
+document.documentElement.setAttribute("data-accent", accent);
+document.querySelectorAll(".accent-dot").forEach(d => d.classList.remove("active"));
+dotEl.classList.add("active");
+}
+
+function showToast(msg) {
+const t = document.getElementById("toast");
+t.textContent = msg;
+t.classList.add("show");
+setTimeout(() => { t.classList.remove("show"); }, 2400);
+}
+
+initApp();
+</script>
+</body>
+</html>
